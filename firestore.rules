@@ -1,0 +1,406 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} { 
+      allow read, write: if false; 
+    }
+    
+    function isValidId(id) { 
+      return id is string && id.size() > 0 && id.size() <= 256 && id.matches('^[a-zA-Z0-9_\\-\\.:@]+$'); 
+    }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+
+    function isUserAdminRole(role) {
+      return role in ['admin', 'superadmin'];
+    }
+
+    function isAdmin() { 
+      return isSignedIn() && (
+        (request.auth.token.email_verified == true && request.auth.token.email != null && (request.auth.token.email.lower() == 'vnsbek@gmail.com' || request.auth.token.email.lower() == 'admin@ffaz.az')) ||
+        (request.auth.token.admin == true) ||
+        (('role' in request.auth.token) && isUserAdminRole(request.auth.token.role)) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && isUserAdminRole(get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role))
+      );
+    }
+
+    function isNewsEditor() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'news_editor')
+      );
+    }
+
+    function isTicketEditor() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ticket_editor')
+      );
+    }
+
+    function isContentEditor() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'superadmin', 'content_editor'])
+      );
+    }
+
+    function hasActiveSubscription() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isDesigner == true ||
+          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.designerId != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.designerId != '') ||
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)/private/account) && (
+            get(/databases/$(database)/documents/users/$(request.auth.uid)/private/account).data.subscriptionTier in ['pro', 'business', 'creator', 'elite'] &&
+            ((get(/databases/$(database)/documents/users/$(request.auth.uid)/private/account).data.subscriptionValidUntil == null) ||
+             (get(/databases/$(database)/documents/users/$(request.auth.uid)/private/account).data.subscriptionValidUntil > request.time.toMillis()))
+          ))
+        ))
+      );
+    }
+
+    function isAgencyRep() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.hasAgencyBadge == true ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.agencyVerificationStatus == 'approved' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAgencyRepresentative == true
+        ))
+      );
+    }
+
+    // =========================================================================
+    // USERS (Public Profile: safe fields & badges. No emails or private flags)
+    // =========================================================================
+    match /users/{userId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidId(userId) && (incoming().role == 'user' || isAdmin()) &&
+                    incoming().keys().hasOnly(['name', 'username', 'handle', 'bio', 'avatarUrl', 'photoURL', 'links', 'profileData', 'onboardingComplete', 'industry', 'degree', 'interestLevel', 'ageGroup', 'primaryGoal', 'lastProfileUpdate', 'lastLoginAt', 'lastActiveAt', 'feedLanguage', 'following', 'followers', 'createdAt', 'role', 'brandName', 'isDesigner', 'designerRole', 'isModel']);
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (
+          request.auth.uid == userId &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['name', 'username', 'handle', 'bio', 'avatarUrl', 'photoURL', 'links', 'profileData', 'onboardingComplete', 'industry', 'degree', 'interestLevel', 'ageGroup', 'primaryGoal', 'lastProfileUpdate', 'lastLoginAt', 'lastActiveAt', 'feedLanguage', 'following', 'brandName', 'designerRole', 'followers'])
+        ) ||
+        (
+          incoming().diff(existing()).affectedKeys().hasOnly(['followers']) &&
+          (incoming().followers is list)
+        ) ||
+        (
+          isAgencyRep() &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['hasModelBadge', 'modelVerificationStatus', 'modelVerifiedAt', 'modelVerifiedByAgency', 'modelVerifiedByUserId', 'modelAgencyName', 'modelAgencyId', 'representedAgencyName', 'isModel'])
+        )
+      );
+      allow delete: if isAdmin();
+
+      // =======================================================================
+      // USERS PRIVATE ACCOUNT SUBCOLLECTION (Emails, Blocklists, Privileged state)
+      // =======================================================================
+      match /private/{docId} {
+        allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+        allow create: if isSignedIn() && request.auth.uid == userId && docId == 'account' &&
+                      incoming().keys().hasOnly(['email', 'blockedUsers', 'createdAt', 'subscriptionTier', 'billingCycle', 'singleJobCredits', 'hasJobPostingAccess']);
+        allow update: if isSignedIn() && (
+          isAdmin() ||
+          (request.auth.uid == userId && incoming().diff(existing()).affectedKeys().hasOnly(['blockedUsers', 'feedLanguage']))
+        );
+        allow delete: if isAdmin();
+      }
+    }
+
+    // =========================================================================
+    // FEED POSTS, LIKES, COMMENTS, AND LIVE MESSAGES
+    // =========================================================================
+    function isValidFeedPost(data) {
+       return data.keys().hasOnly(['userId', 'content', 'imageUrl', 'images', 'videoUrl', 'likesCount', 'commentsCount', 'createdAt', 'isClosed', 'tag', 'topic', 'isTop', 'isPinned']) &&
+              data.userId is string &&
+              data.content is string && data.content.size() <= 3000 &&
+              (data.keys().hasAll(['imageUrl']) ? data.imageUrl is string : true) &&
+              (data.keys().hasAll(['images']) ? (data.images is list && data.images.size() <= 10) : true) &&
+              (data.keys().hasAll(['videoUrl']) ? (data.videoUrl is string && data.videoUrl.size() <= 1048487) : true) &&
+              (data.keys().hasAll(['tag']) ? (data.tag is string && data.tag.size() <= 50) : true) &&
+              (data.keys().hasAll(['topic']) ? (data.topic is string && data.topic.size() <= 50) : true) &&
+              (data.keys().hasAll(['isTop']) ? data.isTop is bool : true) &&
+              (data.keys().hasAll(['isPinned']) ? data.isPinned is bool : true) &&
+              data.likesCount is number && data.likesCount >= 0 &&
+              data.commentsCount is number && data.commentsCount >= 0 &&
+              (data.createdAt is timestamp || data.createdAt is number) &&
+              (data.keys().hasAll(['isClosed']) ? data.isClosed is bool : true);
+    }
+
+    match /feedPosts/{postId} {
+      allow get: if !resource.data.isClosed || hasActiveSubscription() || (isSignedIn() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow list: if true;
+      allow create: if isSignedIn() && isValidId(postId) && isValidFeedPost(incoming()) && incoming().userId == request.auth.uid &&
+                    incoming().likesCount == 0 && incoming().commentsCount == 0 &&
+                    (!('isTop' in incoming()) || !incoming().isTop) && (!('isPinned' in incoming()) || !incoming().isPinned);
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (
+          incoming().userId == existing().userId &&
+          incoming().userId == request.auth.uid &&
+          isValidFeedPost(incoming()) &&
+          !incoming().diff(existing()).affectedKeys().hasAny(['userId', 'createdAt', 'isTop', 'isPinned', 'likesCount', 'commentsCount'])
+        )
+      );
+      allow delete: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    match /feedComments/{commentId} {
+      allow read: if true;
+      allow create: if false; // Server endpoint /api/feed/:postId/comments handles creation atomically
+      allow update: if isSignedIn() && (isAdmin() || (existing().userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['content'])));
+      allow delete: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    match /feedLikes/{likeId} {
+       allow read: if true;
+       allow create, update: if false; // Server endpoint /api/feed/:postId/like handles atomic toggle
+       allow delete: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    match /feedLiveMessages/{msgId} {
+       allow read: if resource.data.channel == 'public' || (isSignedIn() && hasActiveSubscription()) || isAdmin();
+       allow create: if isSignedIn() && isValidId(msgId) && incoming().userId == request.auth.uid &&
+                     (incoming().channel == 'public' || hasActiveSubscription());
+       allow update: if false;
+       allow delete: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    // =========================================================================
+    // EVENTS, TICKETS, TRANSACTIONS, GIVEAWAYS
+    // =========================================================================
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if isAdmin() || isTicketEditor();
+    }
+    
+    match /tickets/{ticketId} {
+      allow get, list: if isSignedIn() && (isAdmin() || isTicketEditor() || resource.data.userId == request.auth.uid);
+      allow create: if false; // Server endpoint /api/tickets/purchase creates tickets with atomic verification
+      allow update, delete: if isAdmin() || isTicketEditor();
+    }
+    
+    match /transactions/{transactionId} {
+      allow get, list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create, update, delete: if false; // Transactions are created server-side only
+    }
+
+    match /giveaway_entries/{entryId} {
+      allow read: if isSignedIn() && (request.auth.uid == resource.data.userId || isAdmin() || isTicketEditor());
+      allow create: if isSignedIn() && request.auth.uid == entryId && incoming().userId == request.auth.uid;
+      allow update: if isAdmin() || isTicketEditor();
+      allow delete: if isSignedIn() && (request.auth.uid == resource.data.userId || isAdmin() || isTicketEditor());
+    }
+
+    // =========================================================================
+    // VACANCIES & JOB APPLICATIONS
+    // =========================================================================
+    match /vacancies/{vacancyId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidId(vacancyId) && incoming().employerId == request.auth.uid &&
+                    (isAdmin() || isContentEditor() || hasActiveSubscription());
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        isContentEditor() ||
+        (incoming().employerId == existing().employerId && incoming().employerId == request.auth.uid)
+      );
+      allow delete: if isSignedIn() && (isAdmin() || isContentEditor() || existing().employerId == request.auth.uid);
+    }
+
+    match /jobApplications/{applicationId} {
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid && incoming().status == 'pending' &&
+                    exists(/databases/$(database)/documents/vacancies/$(incoming().jobId));
+      allow read: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid || resource.data.employerId == request.auth.uid);
+      allow update: if isSignedIn() && incoming().userId == existing().userId && incoming().jobId == existing().jobId && (
+         (incoming().employerId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['status'])) ||
+         isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // NOTIFICATIONS
+    // =========================================================================
+    match /notifications/{notificationId} {
+       allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+       allow create: if isSignedIn() && (
+         isAdmin() ||
+         (
+           incoming().fromUserId == request.auth.uid &&
+           incoming().userId != request.auth.uid &&
+           incoming().read == false &&
+           incoming().title is string && incoming().title.size() <= 100 &&
+           incoming().message is string && incoming().message.size() <= 500
+         )
+       );
+       allow update: if isSignedIn() && incoming().userId == existing().userId && (
+         (incoming().userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['read'])) ||
+         isAdmin()
+       );
+       allow delete: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    // =========================================================================
+    // CONVERSATIONS & DIRECT MESSAGES
+    // =========================================================================
+    match /conversations/{conversationId} {
+      allow get: if isSignedIn() && ('participants' in resource.data) && (request.auth.uid in resource.data.participants || resource.data.requestedBy == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && ((request.auth.uid in resource.data.participants) || (resource.data.requestedBy == request.auth.uid) || isAdmin());
+      allow create: if isSignedIn() && incoming().participants is list && incoming().participants.size() >= 2 && incoming().participants.size() <= 10 && (request.auth.uid in incoming().participants) && incoming().requestedBy == request.auth.uid;
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (
+          request.auth.uid in existing().participants &&
+          !incoming().diff(existing()).affectedKeys().hasAny(['participants', 'requestedBy', 'createdAt'])
+        )
+      );
+      allow delete: if isSignedIn() && (request.auth.uid in existing().participants || isAdmin());
+
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && (
+          isAdmin() ||
+          (exists(/databases/$(database)/documents/conversations/$(conversationId)) &&
+           request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants)
+        );
+        allow create: if isSignedIn() && isValidId(messageId) && incoming().senderId == request.auth.uid && (
+          exists(/databases/$(database)/documents/conversations/$(conversationId)) &&
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+        );
+        allow update: if isSignedIn() && (
+          isAdmin() ||
+          (
+            existing().senderId == request.auth.uid &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['text', 'read', 'readBy', 'reactions', 'deletedFor', 'deletedForEveryone'])
+          )
+        );
+        allow delete: if isSignedIn() && (existing().senderId == request.auth.uid || isAdmin());
+      }
+    }
+
+    // =========================================================================
+    // AGENCY HUB: BROADCASTS & INVITATIONS
+    // =========================================================================
+    match /agency_broadcasts/{broadcastId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isAgencyRep() && incoming().senderUserId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (isAdmin() || resource.data.senderUserId == request.auth.uid);
+    }
+
+    match /agency_invitations/{inviteId} {
+      allow read: if isSignedIn() && (isAdmin() || resource.data.modelUserId == request.auth.uid || resource.data.invitedByUserId == request.auth.uid);
+      allow create: if isSignedIn() && isAgencyRep() && incoming().invitedByUserId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        isAdmin() || 
+        (resource.data.modelUserId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['status'])) ||
+        resource.data.invitedByUserId == request.auth.uid
+      );
+      allow delete: if isSignedIn() && (isAdmin() || resource.data.invitedByUserId == request.auth.uid);
+    }
+
+    // =========================================================================
+    // APPLICATIONS: NEEDLE, AGENCY, DESIGNER
+    // =========================================================================
+    match /needleApplications/{appId} {
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid && incoming().status == 'pending';
+      allow read: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /agency_applications/{appId} {
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid && incoming().status == 'pending';
+      allow read: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /designer_applications/{appId} {
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid && incoming().status == 'pending';
+      allow read: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // PUBLIC FORMS (Subscribers, Sponsorships, Inquiries)
+    // =========================================================================
+    match /subscribers/{subscriberId} {
+      allow create: if incoming().keys().hasOnly(['email', 'whatsapp', 'createdAt']) &&
+                    incoming().email is string && incoming().email.size() <= 200 &&
+                    incoming().email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$');
+      allow read, update, delete: if isAdmin() || isContentEditor();
+    }
+
+    match /sponsorships/{sponsorshipId} {
+      allow create: if incoming().keys().hasOnly(['brandName', 'email', 'message', 'createdAt', 'status']) &&
+                    incoming().email is string && incoming().email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$') &&
+                    incoming().status == 'pending';
+      allow read, update, delete: if isAdmin() || isContentEditor();
+    }
+
+    match /businessInquiries/{inquiryId} {
+      allow create: if incoming().keys().hasOnly(['name', 'company', 'phone', 'email', 'message', 'userId', 'userEmail', 'createdAt']) &&
+                    incoming().email is string && incoming().email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$');
+      allow read, update, delete: if isAdmin() || isContentEditor();
+    }
+
+    // =========================================================================
+    // EDITORIAL & CONTENT CATALOGS
+    // =========================================================================
+    match /designers/{designerId} {
+      allow read: if true;
+      allow write: if isAdmin() || isContentEditor();
+    }
+
+    match /education/{educationId} {
+      allow read: if true;
+      allow write: if isAdmin() || isContentEditor();
+    }
+
+    match /agencies/{agencyId} {
+      allow read: if true;
+      allow write: if isAdmin() || isContentEditor();
+    }
+
+    match /sponsors/{sponsorId} {
+      allow read: if true;
+      allow write: if isAdmin() || isContentEditor();
+    }
+
+    match /siteSettings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin() || isContentEditor();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin() || isContentEditor();
+    }
+
+    match /ffAiKnowledge/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() || isContentEditor();
+    }
+
+    match /news/{newsId} {
+      allow read: if true;
+      allow write: if isAdmin() || isNewsEditor();
+    }
+
+    match /posts/{postId} {
+      allow read, list: if isSignedIn();
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /admin_invites/{email} {
+      allow get: if isSignedIn() && (isAdmin() || (request.auth.token.email != null && request.auth.token.email.lower() == email.lower()));
+      allow list, write: if isAdmin();
+    }
+
+    match /processed_webhooks/{webhookId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

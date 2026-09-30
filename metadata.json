@@ -1,0 +1,6 @@
+{
+  "name": "Azerbaijan Fashion Events",
+  "description": "A platform to find and purchase online tickets for upcoming fashion events, with user and admin dashboards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

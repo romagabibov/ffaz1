@@ -1,0 +1,679 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Outfit", "Plus Jakarta Sans", -apple-system, sans-serif;
+  --font-display: "Outfit", "Syne", "Plus Jakarta Sans", sans-serif;
+  --font-mono: "Space Mono", monospace;
+  
+  --color-brand-light: var(--brand-light);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-greige: var(--brand-greige);
+  --color-brand-espresso: var(--brand-espresso);
+  --color-brand-red: var(--brand-red);
+  --color-brand-card: var(--brand-card);
+  --color-brand-border: var(--brand-border);
+}
+
+@layer base {
+  :root {
+    --brand-light: #FAF8F5;
+    --brand-dark: #121212;
+    --brand-accent: #7A0000;
+    --brand-red: #7A0000;
+    --brand-greige: #E5E0D8;
+    --brand-espresso: #2B231F;
+    --brand-muted: #F3EFEA;
+    --brand-card: #FFFFFF;
+    --brand-border: rgba(18, 18, 18, 0.08);
+
+    /* Safe Area Variables for modern notched & curved screens */
+    --sat: env(safe-area-inset-top, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+    --sar: env(safe-area-inset-right, 0px);
+  }
+
+  .dark {
+    --brand-light: #0E0E10;
+    --brand-dark: #F5F5F7;
+    --brand-accent: #E03131;
+    --brand-red: #E03131;
+    --brand-greige: #27272A;
+    --brand-espresso: #E4E4E7;
+    --brand-muted: #18181B;
+    --brand-card: #141416;
+    --brand-border: rgba(245, 245, 247, 0.12);
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-brand-light);
+    color: var(--color-brand-dark);
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    max-width: 100vw;
+    letter-spacing: -0.01em;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Accessible focus rings across all devices */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-accent);
+    outline-offset: 2px;
+  }
+
+  /* Responsive image scaling */
+  img, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Touch-friendly interactive elements */
+  button, a, input, select, textarea {
+    touch-action: manipulation;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.015em;
+  }
+}
+
+/* Premium Air Couture Buttons */
+.brand-button {
+  background-color: var(--color-brand-dark);
+  color: var(--color-brand-light);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  font-weight: 600;
+  padding: 0.8125rem 1.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border: 1px solid var(--color-brand-dark);
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  font-size: 0.75rem;
+  box-shadow: 0 4px 14px -3px rgba(28, 25, 23, 0.12);
+}
+
+.brand-button:hover {
+  background-color: var(--color-brand-accent);
+  color: #ffffff;
+  border-color: var(--color-brand-accent);
+  transform: translateY(-1.5px);
+  box-shadow: 0 8px 24px -4px rgba(128, 29, 43, 0.3);
+}
+
+.brand-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.brand-button-outline {
+  background-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  color: var(--color-brand-dark);
+  border: 1px solid rgba(28, 25, 23, 0.18);
+  border-radius: 9999px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  font-weight: 600;
+  padding: 0.8125rem 1.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 8px -2px rgba(28, 25, 23, 0.04);
+}
+
+.dark .brand-button-outline {
+  background-color: rgba(26, 24, 23, 0.6);
+  border-color: rgba(247, 244, 238, 0.18);
+}
+
+.brand-button-outline:hover {
+  background-color: var(--color-brand-dark);
+  color: var(--color-brand-light);
+  border-color: var(--color-brand-dark);
+  transform: translateY(-1.5px);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.12);
+}
+
+.brand-button-outline:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.brand-button-red {
+  background-color: var(--color-brand-accent);
+  color: #ffffff;
+  border: 1px solid var(--color-brand-accent);
+  border-radius: 9999px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  font-weight: 600;
+  padding: 0.8125rem 1.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  box-shadow: 0 6px 20px -4px rgba(128, 29, 43, 0.35);
+}
+
+.brand-button-red:hover {
+  background-color: var(--color-brand-dark);
+  border-color: var(--color-brand-dark);
+  color: var(--color-brand-light);
+  transform: translateY(-1.5px);
+  box-shadow: 0 8px 24px -4px rgba(28, 25, 23, 0.25);
+}
+
+.brand-button-red:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Airy Luxury Editorial Cards */
+.card-brutal {
+  background-color: var(--brand-card, #ffffff);
+  border: 1px solid var(--brand-border, rgba(28, 25, 23, 0.08));
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-brutal:hover {
+  border-color: rgba(128, 29, 43, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px -12px rgba(28, 25, 23, 0.08), 0 2px 8px rgba(128, 29, 43, 0.05);
+}
+
+/* Runway Marquee Ribbon */
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  background: linear-gradient(90deg, #801D2B 0%, #661421 100%);
+  color: #ffffff;
+  padding: 0.875rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.marquee-content {
+  display: inline-flex;
+  animation: marquee 28s linear infinite;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.8125rem;
+  letter-spacing: 0.2em;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Editorial Bracket Tag Style */
+.bracket-tag {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-brand-accent);
+}
+
+.editorial-heading {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+}
+
+.editorial-red-heading {
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  color: var(--color-brand-accent);
+}
+
+.editorial-link {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-brand-dark);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  border-bottom: 1.5px solid transparent;
+}
+
+.editorial-link:hover {
+  color: var(--color-brand-accent);
+  border-bottom-color: var(--color-brand-accent);
+  transform: translateX(3px);
+}
+
+/* High Fashion Luxury Dividers */
+.editorial-rule {
+  height: 1px;
+  background-color: currentColor;
+  opacity: 0.15;
+  width: 100%;
+}
+
+/* Universal Scrollbar Elimination (Preserves full native scroll physics & gestures) */
+*,
+*::before,
+*::after {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox and modern standard */
+}
+
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+*::-webkit-scrollbar-thumb {
+  display: none !important;
+  background: transparent !important;
+}
+
+*::-webkit-scrollbar-track {
+  display: none !important;
+  background: transparent !important;
+}
+
+html, 
+body {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* Helper utility classes for explicit markup compatibility */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.no-scrollbar,
+.scrollbar-none,
+.scrollbar-hide {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Visible elegant scrollbar exclusively for Admin Tabs navigation */
+.admin-tabs-scrollbar {
+  -ms-overflow-style: auto !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--color-brand-accent) rgba(18, 18, 18, 0.08) !important;
+  padding-bottom: 6px !important;
+}
+
+.admin-tabs-scrollbar::-webkit-scrollbar {
+  display: block !important;
+  height: 4px !important;
+  background: rgba(18, 18, 18, 0.05) !important;
+  border-radius: 9999px !important;
+}
+
+.admin-tabs-scrollbar::-webkit-scrollbar-thumb {
+  display: block !important;
+  background: var(--color-brand-accent) !important;
+  border-radius: 9999px !important;
+}
+
+.admin-tabs-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-dark) !important;
+}
+
+.admin-tabs-scrollbar::-webkit-scrollbar-track {
+  display: block !important;
+  background: rgba(18, 18, 18, 0.06) !important;
+  border-radius: 9999px !important;
+}
+
+/* ==========================================================================
+   DARK MODE HIGH CONTRAST & LEGIBILITY OVERHAUL
+   ========================================================================== */
+
+/* Universal Background Inversions in Dark Mode */
+.dark .bg-white {
+  background-color: var(--brand-card, #141416) !important;
+  color: #F5F5F7 !important;
+}
+
+.dark .bg-brand-light {
+  background-color: var(--brand-light, #0E0E10) !important;
+}
+
+.dark .bg-brand-muted {
+  background-color: var(--brand-muted, #18181B) !important;
+}
+
+.dark .bg-stone-50,
+.dark .bg-gray-50,
+.dark .bg-zinc-50,
+.dark .bg-slate-50,
+.dark .bg-neutral-50,
+.dark .bg-stone-100,
+.dark .bg-gray-100,
+.dark .bg-zinc-100,
+.dark .bg-slate-100,
+.dark .bg-neutral-100 {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  color: #F5F5F7 !important;
+}
+
+.dark .bg-brand-muted\/20,
+.dark .bg-brand-muted\/30,
+.dark .bg-brand-muted\/40,
+.dark .bg-brand-muted\/50,
+.dark .bg-brand-muted\/70 {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.dark .bg-brand-light\/60,
+.dark .bg-brand-light\/70,
+.dark .bg-brand-light\/80,
+.dark .bg-brand-light\/90 {
+  background-color: rgba(20, 20, 22, 0.9) !important;
+}
+
+/* Text Readability in Dark Mode */
+.dark .text-brand-dark {
+  color: #F5F5F7 !important;
+}
+
+.dark .text-brand-dark\/90,
+.dark .text-brand-dark\/85,
+.dark .text-brand-dark\/80 {
+  color: rgba(245, 245, 247, 0.9) !important;
+}
+
+.dark .text-brand-dark\/75,
+.dark .text-brand-dark\/70 {
+  color: rgba(245, 245, 247, 0.75) !important;
+}
+
+.dark .text-brand-dark\/65,
+.dark .text-brand-dark\/60 {
+  color: rgba(245, 245, 247, 0.65) !important;
+}
+
+.dark .text-brand-dark\/55,
+.dark .text-brand-dark\/50,
+.dark .text-brand-dark\/40 {
+  color: rgba(245, 245, 247, 0.5) !important;
+}
+
+.dark .text-brand-dark\/30,
+.dark .text-brand-dark\/20 {
+  color: rgba(245, 245, 247, 0.3) !important;
+}
+
+.dark .text-black,
+.dark .text-stone-900,
+.dark .text-zinc-900,
+.dark .text-gray-900,
+.dark .text-neutral-900 {
+  color: #F5F5F7 !important;
+}
+
+.dark .text-stone-800,
+.dark .text-zinc-800,
+.dark .text-gray-800,
+.dark .text-neutral-800 {
+  color: #E4E4E7 !important;
+}
+
+.dark .text-stone-700,
+.dark .text-zinc-700,
+.dark .text-gray-700,
+.dark .text-neutral-700 {
+  color: #D4D4D8 !important;
+}
+
+.dark .text-stone-600,
+.dark .text-zinc-600,
+.dark .text-gray-600,
+.dark .text-neutral-600 {
+  color: #A1A1AA !important;
+}
+
+/* Inputs, Textareas, and Selects in Dark Mode */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="submit"]):not([type="button"]),
+.dark textarea,
+.dark select {
+  background-color: #18181B !important;
+  color: #F5F5F7 !important;
+  border-color: rgba(245, 245, 247, 0.16) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgba(245, 245, 247, 0.45) !important;
+}
+
+.dark select option {
+  background-color: #18181B !important;
+  color: #F5F5F7 !important;
+}
+
+/* Modal Popups, Menus & Dropdowns */
+.dark .bg-white\/80,
+.dark .bg-white\/90,
+.dark .bg-white\/95 {
+  background-color: rgba(20, 20, 22, 0.95) !important;
+  color: #F5F5F7 !important;
+}
+
+/* Modal Overlays & Backdrop must stay dark */
+.dark [class*="bg-brand-dark/80"],
+.dark [class*="bg-brand-dark/85"],
+.dark [class*="bg-brand-dark/90"],
+.dark [class*="bg-brand-dark/70"],
+.dark [class*="bg-brand-dark/60"],
+.dark [class*="bg-brand-dark/50"],
+.dark [class*="bg-black/"],
+.dark [class*="bg-stone-900/"],
+.dark [class*="bg-stone-950/"] {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Primary Action Buttons in Dark Mode */
+.dark button.bg-brand-dark,
+.dark a.bg-brand-dark,
+.dark .bg-brand-dark:not([class*="bg-brand-dark/"]) {
+  background-color: #F5F5F7 !important;
+  color: #0E0E10 !important;
+}
+
+.dark button.bg-brand-dark *,
+.dark a.bg-brand-dark *,
+.dark .bg-brand-dark:not([class*="bg-brand-dark/"]) * {
+  color: #0E0E10 !important;
+}
+
+.dark button.bg-brand-dark:hover,
+.dark a.bg-brand-dark:hover {
+  background-color: #E03131 !important;
+  color: #FFFFFF !important;
+}
+.dark button.bg-brand-dark:hover *,
+.dark a.bg-brand-dark:hover * {
+  color: #FFFFFF !important;
+}
+
+.dark .hover\:bg-brand-dark:hover {
+  background-color: #F5F5F7 !important;
+  color: #0E0E10 !important;
+}
+.dark .hover\:bg-brand-dark:hover * {
+  color: #0E0E10 !important;
+}
+
+.dark button.bg-brand-accent,
+.dark a.bg-brand-accent {
+  background-color: #B91C1C !important;
+  color: #FFFFFF !important;
+}
+
+/* Keyline Borders in Dark Mode */
+.dark .border-brand-dark\/\[0\.06\],
+.dark .border-brand-dark\/\[0\.08\],
+.dark .border-brand-dark\/\[0\.1\],
+.dark .border-brand-dark\/\[0\.12\],
+.dark .border-brand-dark\/\[0\.15\],
+.dark .border-brand-dark\/10,
+.dark .border-brand-dark\/15,
+.dark .border-brand-dark\/20,
+.dark .border-brand-dark\/25,
+.dark .border-brand-dark\/30,
+.dark .border-brand-dark\/40,
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-stone-100,
+.dark .border-stone-200,
+.dark .border-stone-300,
+.dark .border-zinc-100,
+.dark .border-zinc-200,
+.dark .border-zinc-300 {
+  border-color: rgba(245, 245, 247, 0.12) !important;
+}
+
+/* Hardcoded Dark Cards (VIP passes, stats, dark banners) */
+.dark .bg-stone-900,
+.dark .bg-stone-950,
+.dark .bg-zinc-900,
+.dark .bg-zinc-950,
+.dark .bg-black {
+  background-color: #141416 !important;
+  color: #F5F5F7 !important;
+}
+
+/* Accent Badges in Dark Mode */
+.dark .bg-amber-50,
+.dark .bg-amber-50\/70,
+.dark .bg-amber-500\/10 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+}
+.dark .text-amber-800,
+.dark .text-amber-900 {
+  color: #FBBF24 !important;
+}
+.dark .border-amber-500\/20,
+.dark .border-amber-500\/25,
+.dark .border-amber-400\/30 {
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.dark .bg-emerald-50,
+.dark .bg-emerald-50\/70,
+.dark .bg-emerald-500\/10 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+}
+.dark .text-emerald-800,
+.dark .text-emerald-900,
+.dark .text-emerald-950 {
+  color: #34D399 !important;
+}
+.dark .border-emerald-300,
+.dark .border-emerald-500\/20,
+.dark .border-emerald-500\/30,
+.dark .border-emerald-500\/40 {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.dark .bg-red-50,
+.dark .bg-red-50\/70 {
+  background-color: rgba(220, 38, 38, 0.15) !important;
+}
+.dark .text-red-900,
+.dark .text-red-950 {
+  color: #FCA5A5 !important;
+}
+.dark .border-red-200,
+.dark .border-red-500\/30 {
+  border-color: rgba(220, 38, 38, 0.3) !important;
+}
+
+/* Header and Navigation in Dark Mode */
+.dark header,
+.dark .bg-brand-light\/95 {
+  background-color: rgba(14, 14, 16, 0.92) !important;
+  border-color: rgba(245, 245, 247, 0.1) !important;
+}
+
+/* Rich Text Editor (Quill) in Dark Mode */
+.dark .ql-toolbar.ql-snow {
+  background-color: #18181B !important;
+  border-color: rgba(245, 245, 247, 0.15) !important;
+}
+.dark .ql-container.ql-snow {
+  background-color: #141416 !important;
+  border-color: rgba(245, 245, 247, 0.15) !important;
+  color: #F5F5F7 !important;
+}
+.dark .ql-editor {
+  color: #F5F5F7 !important;
+}
+.dark .ql-editor.ql-blank::before {
+  color: rgba(245, 245, 247, 0.4) !important;
+}
+.dark .ql-snow .ql-stroke {
+  stroke: #F5F5F7 !important;
+}
+.dark .ql-snow .ql-fill {
+  fill: #F5F5F7 !important;
+}
+.dark .ql-snow .ql-picker {
+  color: #F5F5F7 !important;
+}
+.dark .ql-snow .ql-picker-options {
+  background-color: #18181B !important;
+  border-color: rgba(245, 245, 247, 0.15) !important;
+}
+
+/* Preserve QR Code scanning container */
+.dark .shrink-0.bg-white.p-3.rounded-2xl {
+  background-color: #FFFFFF !important;
+}

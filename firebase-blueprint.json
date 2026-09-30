@@ -1,0 +1,979 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Public user profile document (safe fields and badges visible to all)",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "username": { "type": "string" },
+        "handle": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin", "superadmin", "news_editor", "content_editor", "ticket_editor"] },
+        "createdAt": { "type": "number", "description": "Timestamp" },
+        "avatarUrl": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "bio": { "type": "string" },
+        "links": { "type": "string" },
+        "isDesigner": { "type": "boolean" },
+        "designerRole": { "type": "string" },
+        "brandName": { "type": "string" },
+        "designerVerificationStatus": { "type": "string" },
+        "hasGoldenNeedle": { "type": "boolean" },
+        "hasSilverNeedle": { "type": "boolean" },
+        "hasDirectChat": { "type": "boolean" },
+        "isModel": { "type": "boolean" },
+        "hasModelBadge": { "type": "boolean" },
+        "isAgencyRepresentative": { "type": "boolean" },
+        "hasAgencyBadge": { "type": "boolean" },
+        "onboardingComplete": { "type": "boolean" },
+        "industry": { "type": "string" },
+        "degree": { "type": "string" },
+        "interestLevel": { "type": "string" },
+        "ageGroup": { "type": "string" },
+        "primaryGoal": { "type": "string" },
+        "feedLanguage": { "type": "string" },
+        "following": { "type": "array", "items": { "type": "string" } },
+        "followers": { "type": "array", "items": { "type": "string" } },
+        "lastProfileUpdate": { "type": "number" },
+        "lastLoginAt": { "type": "number" },
+        "lastActiveAt": { "type": "number" }
+      },
+      "required": [
+        "name",
+        "role",
+        "createdAt"
+      ]
+    },
+    "UserPrivateAccount": {
+      "title": "UserPrivateAccount",
+      "description": "Private user account document containing email, subscription state, credits and security fields",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "blockedUsers": { "type": "array", "items": { "type": "string" } },
+        "subscriptionTier": { "type": "string" },
+        "subscriptionValidUntil": { "type": "number" },
+        "subscriptionExpiresAt": { "type": "number" },
+        "subscriptionGrantedByAdmin": { "type": "boolean" },
+        "subscriptionGrantedAt": { "type": "number" },
+        "billingCycle": { "type": "string" },
+        "singleJobCredits": { "type": "number" },
+        "hasJobPostingAccess": { "type": "boolean" },
+        "warnings": { "type": "number" },
+        "vipGiveawayEntered": { "type": "boolean" },
+        "createdAt": { "type": "number" }
+      },
+      "required": [
+        "email",
+        "createdAt"
+      ]
+    },
+    "Event": {
+      "title": "Event",
+      "description": "A fashion event",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "date": {
+          "type": "number",
+          "description": "Timestamp"
+        },
+        "location": {
+          "type": "string"
+        },
+        "imageUrl": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number"
+        },
+        "totalTickets": {
+          "type": "number"
+        },
+        "availableTickets": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Timestamp"
+        },
+        "updatedAt": {
+          "type": "number",
+          "description": "Timestamp"
+        }
+      },
+      "required": [
+        "title",
+        "description",
+        "date",
+        "location",
+        "price",
+        "totalTickets",
+        "availableTickets",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Ticket": {
+      "title": "Ticket",
+      "description": "A ticket purchased by a user for an event",
+      "type": "object",
+      "properties": {
+        "eventId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "purchaseDate": {
+          "type": "number",
+          "description": "Timestamp"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "used",
+            "cancelled"
+          ]
+        },
+        "qrCodeData": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "eventId",
+        "userId",
+        "purchaseDate",
+        "status",
+        "qrCodeData"
+      ]
+    },
+    "Post": {
+      "title": "Post",
+      "description": "User's portfolio post",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "imageUrl": {
+          "type": "string"
+        },
+        "likes": {
+          "type": "number"
+        },
+        "comments": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Timestamp"
+        }
+      },
+      "required": [
+        "userId",
+        "imageUrl",
+        "likes",
+        "comments",
+        "createdAt"
+      ]
+    },
+    "Subscriber": {
+      "title": "Subscriber",
+      "description": "Newsletter email subscriber",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "email",
+        "createdAt"
+      ]
+    },
+    "Sponsorship": {
+      "title": "Sponsorship",
+      "description": "Sponsorship applications",
+      "type": "object",
+      "properties": {
+        "brandName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "brandName",
+        "email",
+        "message",
+        "createdAt",
+        "status"
+      ]
+    },
+    "Vacancy": {
+      "title": "Vacancy",
+      "description": "Fashion job or internship vacancy",
+      "type": "object",
+      "properties": {
+        "employerId": {
+          "type": "string"
+        },
+        "employerName": {
+          "type": "string"
+        },
+        "companyName": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "salary": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "customQuestions": {
+          "type": "array"
+        },
+        "isPaid": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "number"
+        },
+        "updatedAt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "employerId",
+        "title",
+        "description",
+        "createdAt"
+      ]
+    },
+    "JobApplication": {
+      "title": "Job Application",
+      "description": "Job/internship applications",
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string"
+        },
+        "employerId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "coverLetter": {
+          "type": "string"
+        },
+        "cvUrl": {
+          "type": "string"
+        },
+        "customAnswers": {
+          "type": "array"
+        },
+        "status": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "jobId",
+        "userId",
+        "name",
+        "email",
+        "status",
+        "createdAt"
+      ]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "Direct message chat threads",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "participants": {
+          "type": "array"
+        },
+        "status": {
+          "type": "string"
+        },
+        "requestedBy": {
+          "type": "string"
+        },
+        "recipientId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "number"
+        },
+        "updatedAt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "participants",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Chat message inside a conversation",
+      "type": "object",
+      "properties": {
+        "conversationId": {
+          "type": "string"
+        },
+        "senderId": {
+          "type": "string"
+        },
+        "senderName": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "imageUrl": {
+          "type": "string"
+        },
+        "audioUrl": {
+          "type": "string"
+        },
+        "audioDuration": {
+          "type": "number"
+        },
+        "waveform": {
+          "type": "array"
+        },
+        "reactions": {
+          "type": "object"
+        },
+        "createdAt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "conversationId",
+        "senderId",
+        "senderName",
+        "createdAt"
+      ]
+    },
+    "SiteSettings": {
+      "title": "SiteSettings",
+      "description": "Global website configuration like About Us content",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "number"
+        }
+      }
+    },
+    "NeedleApplication": {
+      "title": "NeedleApplication",
+      "description": "Silver and Golden Needle verification applications",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "userName": {
+          "type": "string"
+        },
+        "userEmail": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "brandName": {
+          "type": "string"
+        },
+        "portfolioUrl": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "fee": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "userId",
+        "type",
+        "portfolioUrl",
+        "status"
+      ]
+    },
+    "BusinessInquiry": {
+      "title": "BusinessInquiry",
+      "description": "B2B partnership and sponsorship inquiries",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "email"
+      ]
+    },
+    "FfAiKnowledgeDoc": {
+      "title": "FfAiKnowledgeDoc",
+      "description": "Knowledge document for the FF AI education assistant",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "institution": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "faculties": {
+          "type": "array"
+        },
+        "tuition": {
+          "type": "string"
+        },
+        "admissionRequirements": {
+          "type": "string"
+        },
+        "deadlines": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "title",
+        "content"
+      ]
+    },
+    "FeedLiveMessage": {
+      "title": "FeedLiveMessage",
+      "description": "Live real-time messages posted to fashion community live feed",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "userName": {
+          "type": "string"
+        },
+        "userAvatar": {
+          "type": "string"
+        },
+        "channel": {
+          "type": "string",
+          "enum": [
+            "public",
+            "pro"
+          ]
+        },
+        "text": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "number"
+        },
+        "badge": {
+          "type": "string"
+        },
+        "isDesigner": {
+          "type": "boolean"
+        },
+        "audioUrl": {
+          "type": "string"
+        },
+        "audioDuration": {
+          "type": "number"
+        },
+        "waveform": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "userId",
+        "channel",
+        "createdAt"
+      ]
+    },
+    "FeedPost": {
+      "title": "FeedPost",
+      "description": "Fashion community feed posts",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "imageUrl": {
+          "type": "string"
+        },
+        "images": {
+          "type": "array"
+        },
+        "likesCount": {
+          "type": "number"
+        },
+        "commentsCount": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "number"
+        },
+        "isClosed": {
+          "type": "boolean"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        },
+        "isTop": {
+          "type": "boolean"
+        },
+        "isPinned": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "userId",
+        "content",
+        "likesCount",
+        "commentsCount",
+        "createdAt"
+      ]
+    },
+    "AgencyApplication": {
+      "title": "AgencyApplication",
+      "description": "Application for modeling agency official status and verification privileges",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "userEmail": {
+          "type": "string"
+        },
+        "applicantFirstName": {
+          "type": "string"
+        },
+        "applicantLastName": {
+          "type": "string"
+        },
+        "applicantPatronymic": {
+          "type": "string"
+        },
+        "phoneNumber": {
+          "type": "string"
+        },
+        "agencyName": {
+          "type": "string"
+        },
+        "agencyAddress": {
+          "type": "string"
+        },
+        "foundingYear": {
+          "type": "string"
+        },
+        "idCardPhotoUrl": {
+          "type": "string"
+        },
+        "personalPhotoUrl": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "approved",
+            "rejected"
+          ]
+        },
+        "createdAt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "userId",
+        "applicantFirstName",
+        "applicantLastName",
+        "agencyName",
+        "status",
+        "createdAt"
+      ]
+    },
+    "DesignerApplication": {
+      "title": "DesignerApplication",
+      "description": "Application for official designer verification, Golden Needle, and direct chat privileges",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "userEmail": {
+          "type": "string"
+        },
+        "applicantFirstName": {
+          "type": "string"
+        },
+        "applicantLastName": {
+          "type": "string"
+        },
+        "applicantPatronymic": {
+          "type": "string"
+        },
+        "phoneNumber": {
+          "type": "string"
+        },
+        "brandName": {
+          "type": "string"
+        },
+        "brandAddress": {
+          "type": "string"
+        },
+        "foundingYear": {
+          "type": "string"
+        },
+        "idCardPhotoUrl": {
+          "type": "string"
+        },
+        "personalPhotoUrl": {
+          "type": "string"
+        },
+        "designerRole": {
+          "type": "string"
+        },
+        "collectionsCount": {
+          "type": "string"
+        },
+        "mediaLinks": {
+          "type": "string"
+        },
+        "collectionLinks": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        },
+        "instagram": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "approved",
+            "rejected"
+          ]
+        },
+        "createdAt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "userId",
+        "applicantFirstName",
+        "applicantLastName",
+        "brandName",
+        "status",
+        "createdAt"
+      ]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Billing transaction record for memberships and services",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "userEmail": {
+          "type": "string"
+        },
+        "userName": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "billingCycle": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "txId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "userId",
+        "amount",
+        "currency",
+        "status",
+        "createdAt"
+      ]
+    },
+    "GiveawayEntry": {
+      "title": "GiveawayEntry",
+      "description": "Level 3 VIP Ticket Giveaway entries for runway events",
+      "type": "object",
+      "properties": {
+        "eventId": { "type": "string" },
+        "eventTitle": { "type": "string" },
+        "eventDate": { "type": "number" },
+        "eventLocation": { "type": "string" },
+        "eventImageUrl": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "userHandle": { "type": "string" },
+        "userAvatar": { "type": "string" },
+        "subscriptionTier": { "type": "string" },
+        "enteredAt": { "type": "number" },
+        "isWinner": { "type": "boolean" },
+        "wonAt": { "type": "number" },
+        "status": { "type": "string" }
+      },
+      "required": ["eventId", "userId", "userName", "userEmail", "enteredAt", "isWinner"]
+    }
+  },
+  "firestore": {
+    "/transactions/{transactionId}": {
+      "schema": {
+        "$ref": "#/entities/Transaction"
+      },
+      "description": "Payment and billing transactions"
+    },
+    "/agency_applications/{appId}": {
+      "schema": {
+        "$ref": "#/entities/AgencyApplication"
+      },
+      "description": "Modeling agency official status verification requests"
+    },
+    "/feedPosts/{postId}": {
+      "schema": {
+        "$ref": "#/entities/FeedPost"
+      },
+      "description": "Community feed posts with multi-photo support"
+    },
+    "/feedLiveMessages/{msgId}": {
+      "schema": {
+        "$ref": "#/entities/FeedLiveMessage"
+      },
+      "description": "Live real-time community stream messages"
+    },
+    "/ffAiKnowledge/{docId}": {
+      "schema": {
+        "$ref": "#/entities/FfAiKnowledgeDoc"
+      },
+      "description": "AI education advisor knowledge base collection"
+    },
+    "/needleApplications/{appId}": {
+      "schema": {
+        "$ref": "#/entities/NeedleApplication"
+      },
+      "description": "Needle audit applications"
+    },
+    "/businessInquiries/{inquiryId}": {
+      "schema": {
+        "$ref": "#/entities/BusinessInquiry"
+      },
+      "description": "B2B partnership inquiries"
+    },
+    "/siteSettings/{settingId}": {
+      "schema": {
+        "$ref": "#/entities/SiteSettings"
+      },
+      "description": "Dynamic site settings including about us"
+    },
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
+      },
+      "description": "Public users profile collection"
+    },
+    "/users/{userId}/private/{docId}": {
+      "schema": {
+        "$ref": "#/entities/UserPrivateAccount"
+      },
+      "description": "Private user account data subcollection"
+    },
+    "/events/{eventId}": {
+      "schema": {
+        "$ref": "#/entities/Event"
+      },
+      "description": "Fashion events collection"
+    },
+    "/tickets/{ticketId}": {
+      "schema": {
+        "$ref": "#/entities/Ticket"
+      },
+      "description": "Tickets purchased by users"
+    },
+    "/posts/{postId}": {
+      "schema": {
+        "$ref": "#/entities/Post"
+      },
+      "description": "User posts in their portfolio"
+    },
+    "/subscribers/{subscriberId}": {
+      "schema": {
+        "$ref": "#/entities/Subscriber"
+      },
+      "description": "Emails subscribed to updates"
+    },
+    "/sponsorships/{sponsorshipId}": {
+      "schema": {
+        "$ref": "#/entities/Sponsorship"
+      },
+      "description": "Sponsorship applications"
+    },
+    "/vacancies/{vacancyId}": {
+      "schema": {
+        "$ref": "#/entities/Vacancy"
+      },
+      "description": "Vacancies and opportunities collection"
+    },
+    "/careers/{careerId}": {
+      "schema": {
+        "$ref": "#/entities/Vacancy"
+      },
+      "description": "Legacy alias for vacancies collection"
+    },
+    "/jobApplications/{applicationId}": {
+      "schema": {
+        "$ref": "#/entities/JobApplication"
+      },
+      "description": "Job/internship applications"
+    },
+    "/conversations/{conversationId}": {
+      "schema": {
+        "$ref": "#/entities/Conversation"
+      },
+      "description": "Direct message chat threads"
+    },
+    "/conversations/{conversationId}/messages/{messageId}": {
+      "schema": {
+        "$ref": "#/entities/Message"
+      },
+      "description": "Messages subcollection in a conversation"
+    },
+    "/designer_applications/{appId}": {
+      "schema": {
+        "$ref": "#/entities/DesignerApplication"
+      },
+      "description": "Fashion designer official verification requests for Golden Needle and Direct Chat"
+    },
+    "/giveaway_entries/{entryId}": {
+      "schema": {
+        "$ref": "#/entities/GiveawayEntry"
+      },
+      "description": "Runway ticket giveaway entries submitted by Level 3 Elite VIP members"
+    }
+  }
+}
